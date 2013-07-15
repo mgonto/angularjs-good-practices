@@ -182,6 +182,7 @@ $scope.$watch('[myObject, myObject2]', function() {
 					<p class="fragment">$apply is called by AngularJS in ng-click, ng-keydown, etc.</p>
 					<p class="fragment">$apply should be called manually when an event not handled by AngularJS is received</p>	
 					<p class="fragment">$apply should never be called without a function parameter</p>	
+                                        <p class="fragment">If you're checking for $$phase running, you're doing it wrong</p>
 					<pre class="fragment"><code>
 $element.bind('plotselected', function(e) {
     var stuff = 123;
