@@ -142,6 +142,13 @@ module.filter('numberFormat', function() {
 				</section>
 				
 				<section>
+                                        <h2>$scope</h2>
+                                        <p class="fragment">$scope is the ViewModel of our app. It's the glue between the controller and the model</p>
+                                        <p class="fragment">We should ONLY put in the scope the things that are needed to be used in the view (HTML) or that we need to watch, nothing else</p>
+                                        <p class="fragment">We should NEVER call $parent. If we need something from our parent, we either inherit it from Parent Controller or we receive it as parameter in our directive</p>
+                                </section>
+
+                                <section>
 					<h2>The dot rule</h2>
 					<p class="fragment">Controllers use prototipal inheritance</p>
 					<p class="fragment">Using primitives as model ($scope.number = 3) doesn't work well with Prototipal inheritance</p>
