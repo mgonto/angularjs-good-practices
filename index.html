@@ -51,22 +51,175 @@
 					<img width="73%" height="73%" src="img/concepts.png"></img>
 				</section>
 
-				<section data-state="soothe">
+				<section>
+					<h2>Page Structure</h2>
+					
+					<p class="fragment">We should divide pages into several controllers and directives</p>
+					<p class="fragment">Each controller should have only ONE main functionality</p>
+					<p class="fragment">We should leverage directives for reusable code</p>
+					
+				</section>
+				
+				<section>
 					<h2>Controllers</h2>
 					
-					<p class="fragment">It must act for user inputs (Clicks, submits,etc)</p>
-					<p class="fragment">It should rely on $watchers for models to change things</p>
-					<p class="fragment">It may query server</p>
-					<p class="fragment">It may query server</p>
-					<p class="fragment">It should rely on $watchers a lot</p>	
-					<p class="fragment roll-in">Four Ds<p>
-					<ol class="fourds">
-						<li class="fragment">Data binding</li>
-						<li class="fragment">Directives</li>	
-						<li class="fragment">Dependencies</li>	
-						<li class="fragment">Declarative</li>	
-					</ol>
+					<p class="fragment">The objective is to react to user inputs and watch models for changes</p>
+					<p class="fragment">Processing or working on models should be done either in Services or transformer filters</p>
+					<p class="fragment">Each controller can use models and variables from the parent controller</p>
+					<p class="fragment">If a controller accesses to a DOM element, you're doing things wrong</p>
 				</section>
+				
+				<section>
+					<h2>ui-router for Controller and page structure</h2>
+					<pre>
+						<code data-trim>
+$stateProvider
+.state('main.alerts.buildings', {
+    url: '/buildings',
+    templateUrl: '/js/frontend/app/mescenter/controllers/alerts/buildings/alertBuildings.html',
+    controller: 'AlertBuildingsCtrl'
+})
+.state('main.alerts.buildings.types', {
+    url: '/:buildingId/types',
+    templateUrl: '/js/frontend/app/mescenter/controllers/alerts/types/alertTypes.html',
+    controller: 'AlertTypesCtrl'
+})
+.state('main.alerts.buildings.types.meters', {
+    url: '/meters',
+    templateUrl: '/js/frontend/app/mescenter/controllers/alerts/meters/alertMeters.html',
+    controller: 'AlertMetersCtrl'
+})						
+						</code>
+					</pre>
+					<p>AlertTypesCtrl inherits from AlertBuildingCtrl</pre>
+				</section>
+				
+				<section>
+					<h2>Services</h2>
+					<p class="fragment">Services are singleton. Once instantiated, the same is always returned.</p>
+					<p class="fragment">Services should almost never access DOM values</p>
+					<p class="fragment">Services should aid controller with Logic to be run over models</p>
+					<pre class="fragment"><code>
+module.provider('helloService', function() {
+	
+	var name = "Default Name";
+	this.setName = function(nameParam) {
+		name = nameParam;
+	}
+	
+	this.$get = function() {
+		var service = {};
+		service.sayHello = function() {
+			console.log("Hello " + name);
+		}
+	};
+})
+					</code></pre>
+				</section>
+				
+				<section>
+					<h2>Using filters</h2>
+					<p class="fragment">Filters should be used for converting what needs to be displayed in screen</p>
+					<p class="fragment">They can receive additional parameters and they can be chained</p>
+					<pre class="fragment"><code>
+<div>{{price | numberFormat:'$0.00'}}
+					</code></pre>
+					<pre class="fragment"><code>
+module.filter('numberFormat', function() {
+	return function(input, format) {
+		// Format is $0.00
+	}
+})
+					</code></pre>
+				</section>
+				
+				<section>
+					<h2></h2>
+				</section>
+				
+				<section>
+					<h2>The dot rule</h2>
+					<p class="fragment">Controllers use prototipal inheritance</p>
+					<p class="fragment">Using primitives as model ($scope.number = 3) doesn't work well with Prototipal inheritance</p>
+					<p class="fragment">With primitive change in child, reference is lost in parent. No more bidirectional connection</p>					
+				</section>
+				
+				<section>
+					<h2>$watch</h2>
+					<pre>
+						<code data-trim>
+var myObject = {
+   name: 'Gonto'
+};
+
+$scope.$watch('myObject', function() {
+  // Watcher for object reference change
+});
+
+$scope.$watch('myObject', function() {
+  // Watcher for object equality change
+}, true);
+
+$scope.$watch('[myObject, myObject2]', function() {
+  // Watcher for 2 different objects for any change
+}, true);
+						</code>					
+				</section>
+				
+				<section>
+					<h2>When to use $apply?</h2>
+					<p class="fragment">$apply is called by AngularJS in ng-click, ng-keydown, etc.</p>
+					<p class="fragment">$apply should be called manually when an event not handled by AngularJS is received</p>	
+					<p class="fragment">$apply should never be called without a function parameter</p>	
+					<pre class="fragment"><code>
+$element.bind('plotselected', function(e) {
+    var stuff = 123;
+    $scope.$apply(function() {
+    	$scope.selectedValue = e.ranges;
+    });
+});
+					</code></pre>
+				</section>
+				
+				<section>
+					<h2>ngModel ain't just a word</h2>
+					<p class="fragment">Angular provides an ngModelController when using ng-model directive</p>
+					<p class="fragment">ngModelController provides <a href="http://docs.angularjs.org/api/ng.directive:ngModel.NgModelController">all this neat stuff</a></p>
+					<p class="fragment">It lets us set formatters and parsers to transform results and to set validity or not of the current value</p>
+					<pre class="fragment"><code>
+module.directive('userSelector', function() {
+    return {
+        restrict : 'E',
+        replace: true,
+        require: 'ngModel',
+        templateUrl: '/js/frontend/app/mescenter/directives/userSelector/userSelector.html',
+        scope: {user: '=ngModel'},
+        link: function ($scope, $element, $attrs, ngModelController) {
+            ngModelController.$parsers.push(function(value) {
+            	return value.toLowerCase();
+            });
+        }
+    }
+});
+					</code></pre>
+					
+				</section>
+				
+				<section>
+					<h2>Form validation</h2>
+					<p class="fragment">Giving the form a name allows us to use AngularJS validations</p>
+					<p class="fragment">You can check documentation <a href="http://docs.angularjs.org/api/ng.directive:form">by clicking here</a></p>
+					<p class="fragment">We can use existing validations like `required` or we can create our own based on ngModel.$setValidity</p>
+					<pre class="fragment"><code>
+<form name="myForm" ng-controller="Ctrl">
+  <label>User Type</label><input name="input" ng-model="userType" required>
+  <span class="error" ng-show="myForm.input.$error.required">Required!</span>
+  <input type="submit" ng-click="submit()" 
+  	ng-disabled="!myForm.$dirty || !myForm.$valid" />
+</form>
+					</code></pre>
+				</section>
+				
 				
 				
 				<section data-state="blackout">
